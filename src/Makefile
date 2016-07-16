@@ -23,8 +23,9 @@ MLI = \
   client.mli
 
 CMAS = $(NAME).cma
+CMXS = $(NAME).cmx
 CMXAS = $(NAME).cmxa
-LIBS = $(CMAS) $(CMXAS)
+LIBS = $(CMAS) $(CMXS) $(CMXAS)
 BUILD = \
   $(addprefix _build/,$(LIBS)) \
   $(addprefix _build/,$(MLI)) \

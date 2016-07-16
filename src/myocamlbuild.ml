@@ -2,15 +2,24 @@ open Ocamlbuild_plugin
 
 (* ocamlfind integration following http://www.nabble.com/forum/ViewPost.jtp?post=15979274 *)
 
-(* these functions are not really officially exported *)
-let run_and_read = Ocamlbuild_pack.My_unix.run_and_read
-let blank_sep_strings = Ocamlbuild_pack.Lexers.blank_sep_strings
+let run_command cmd = 
+  let chan = Unix.open_process_in cmd in
+  let out =
+    let rec loop xs =
+      match input_line chan with
+      | x -> loop (x :: xs)
+      | exception End_of_file -> List.rev xs
+    in loop []
+  in
+  match Unix.close_process_in chan with
+  | Unix.WEXITED 0 -> `Ok out
+  | x -> `Error x
 
 (* this lists all supported packages *)
 let find_packages () =
-  blank_sep_strings &
-    Lexing.from_string &
-      run_and_read "ocamlfind list | cut -d' ' -f1"
+  match run_command "ocamlfind list | cut -d' ' -f1" with
+  | `Ok xs -> xs
+  | `Error _ -> failwith "Failed to find packages."
 
 (* this lists all supported packages *)
 let find_syntaxes () = ["camlp4o"]
